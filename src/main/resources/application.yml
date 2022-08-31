@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: jocture-checker
+
+  profiles:
+    active : local
+
+  datasource:
+    list:
+      - name: db-1
+        url:  jdbc:h2:tcp://localhost/~/test
+        username: sa
+        password:
+      - name: db-2
+        url: jdbc:h2:tcp://localhost/~/testdsaasfsaf
+        username: sa
+        password:
