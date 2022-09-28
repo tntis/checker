@@ -1,4 +1,4 @@
-package jocture.checker.datasource;
+package jocture.checker.datasource.properties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,7 @@ public class ConnectionProperties {
     private String username;
     private String password;
 
-    boolean validate(){
+    public boolean validate(){
         return StringUtils.hasText(url) && StringUtils.hasText(username);
     }
 }

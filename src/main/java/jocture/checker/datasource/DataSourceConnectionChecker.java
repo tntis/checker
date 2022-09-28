@@ -1,11 +1,14 @@
 package jocture.checker.datasource;
 
+import jocture.checker.datasource.factory.DataSourceFactory;
+import jocture.checker.datasource.factory.DataSourceFactorySelecter;
+import jocture.checker.datasource.properties.ConnectionProperties;
+import jocture.checker.datasource.properties.DataSourceProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -18,6 +21,8 @@ import java.util.List;
 public class DataSourceConnectionChecker implements ExitCodeGenerator {
 
     private final DataSourceProperties dataSourceProperties;
+    private final DataSourceFactorySelecter dataSourceFactorySelecter;
+    private DataSourceFactory dataSourceFactory;
     private int exitCode= 0;
 
     @Override
@@ -27,6 +32,7 @@ public class DataSourceConnectionChecker implements ExitCodeGenerator {
 
     @EventListener(ApplicationReadyEvent.class)
     public void checkConnections(){
+        selectDataSourceFactory();
         List<ConnectionProperties> propList = dataSourceProperties.getList();
 
         long successCount = propList.stream()
@@ -35,6 +41,11 @@ public class DataSourceConnectionChecker implements ExitCodeGenerator {
 
         setExitCodeToErrorIfNotAllSuccess(successCount);
         log.info("Connection Check End : {}/{} (success/total)", successCount,propList.size());
+    }
+
+    private void selectDataSourceFactory() {
+        dataSourceFactory = dataSourceFactorySelecter.select(dataSourceProperties.getType());
+        log.debug("DatasourceFactory : {}", dataSourceFactory.getClass().getSimpleName());
     }
 
     private boolean checkConnection(ConnectionProperties prop) {
@@ -59,7 +70,8 @@ public class DataSourceConnectionChecker implements ExitCodeGenerator {
         // 커넥션 연결 방법 : DataSource룰 통해서 한다.
 
         // DataSource 인터페이스를 사용하면, 구성과 사용이 분리된다
-        DataSource datasource = new DriverManagerDataSource(prop.getUrl(), prop.getUsername(), prop.getPassword());
+        DataSource datasource = dataSourceFactory.create(prop);
+        log.debug(">>>Datasource ={}",datasource);
         try (Connection conn = datasource.getConnection()) {
             log.info("SUCCESS : {} ({})", prop.getName(), prop.getUrl());
             return true;
@@ -67,6 +79,7 @@ public class DataSourceConnectionChecker implements ExitCodeGenerator {
             log.error("FAIL : {} ({})", prop.getName(), prop.getUrl());
             return false;
         }
+        
     }
 
     private void setExitCodeToErrorIfNotAllSuccess(long successCount) {

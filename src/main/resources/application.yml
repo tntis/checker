@@ -3,23 +3,26 @@ spring:
     name: jocture-checker
 
   profiles:
-    active : local
+    active: local
 
   datasource:
+   # type: com.zaxxer.hikari.HikariDataSource  # FQCN(Fully Qualified Class Name)
+  #  type: org.apache.commons.dbcp.BasicDataSource
     list:
       - name: db-1
         url:  jdbc:h2:tcp://localhost/~/test
         username: sa
         password:
       - name: db-2
-        url: jdbc:h2:tcp://localhost/~/testdsaasfsaf
-        username: sal
+        url: jdbc:h2:tcp://localhost/~/test
+        username: sa
         password:
-      - name: db-3
-        url: jdbc:h2:tcp://localhost/~/testdsaasfsaf
-        username:
-        password:
+
   #    - name: ${db3_name}
   #      url:  ${db3_url}
    #     username: ${db3_username}
    #     password:  ${db3_password}
+
+logging:
+  level:
+    jocture.checker: DEBUG
